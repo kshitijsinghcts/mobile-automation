@@ -1,1 +1,8 @@
+# Ignore local environment credentials
 .env
+
+# Other ignores
+target/
+*.log
+.idea/
+*.iml
