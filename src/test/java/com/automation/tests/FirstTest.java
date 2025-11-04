@@ -1,6 +1,7 @@
 package com.automation.tests;
 
 import com.automation.base.BaseTest;
+import com.automation.pages.OnboardingPage;
 import com.automation.pages.SearchPage;
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -9,13 +10,17 @@ public class FirstTest extends BaseTest {
 
     @Test
     public void simpleSearchTest() {
-        // initialize the Page Object
+        // 1. Handle the Onboarding (SKIP) screen first
+        OnboardingPage onboardingPage = new OnboardingPage(getDriver());
+        onboardingPage.skipOnboarding();
+
+        // 2. Initialize the Search Page
         SearchPage searchPage = new SearchPage(getDriver());
 
-        // perform actions 
+        // 3. Perform actions using Page Object methods
         searchPage.searchFor("BrowserStack");
 
-        // assertions
+        // 4. Add assertions
         Assert.assertTrue(searchPage.areResultsDisplayed(), "Search results were not displayed.");
         
         String firstResult = searchPage.getFirstResultText();

@@ -9,7 +9,7 @@ import org.testng.annotations.AfterMethod;
 import io.github.cdimascio.dotenv.Dotenv;
 
 import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URI;
 import java.time.Duration;
 import java.util.Map;
 
@@ -20,35 +20,36 @@ public class BaseTest {
     public static final String BROWSERSTACK_USERNAME = dotenv.get("BROWSERSTACK_USERNAME");
     public static final String BROWSERSTACK_ACCESS_KEY = dotenv.get("BROWSERSTACK_ACCESS_KEY");
 
-    public static final String HUB_URL = "https://hub-cloud.browserstack.com/wd/hub";
+    public static final String HUB_URL = String.format("https://%s:%s@hub-cloud.browserstack.com/wd/hub",
+            BROWSERSTACK_USERNAME, BROWSERSTACK_ACCESS_KEY);
 
     // threadsafe driver
     protected static ThreadLocal<AppiumDriver> driver = new ThreadLocal<>();
 
     @BeforeMethod
     public void setup() throws MalformedURLException {
+        System.out.println("Loaded Username: " + BROWSERSTACK_USERNAME);
+        System.out.println("Loaded Access Key: " + (BROWSERSTACK_ACCESS_KEY != null ? "******" : null));
         if (BROWSERSTACK_USERNAME == null || BROWSERSTACK_ACCESS_KEY == null) {
             throw new RuntimeException("BrowserStack credentials are not set in enviornment variables!");
         }
         UiAutomator2Options options = new UiAutomator2Options();
         // --- Standard Appium Cabalilities ---
         options.setPlatformName("android");
-        options.setPlatformVersion("12.0");
+        options.setPlatformVersion("13.0");
         options.setDeviceName("Google Pixel 7");
-        // for the app I'll just use the default Wikipedia app
-        options.setApp("bs://c700ce60cf13ae8ed97705a55b8e022f13c5827c");
+        options.setApp("bs://685e9c4a565d800ac038b5b1762167ad28e33e59"); 
 
         // --- BrowserStack-Specific Capabilities ---
         options.setCapability("bstack:options", Map.of(
-            "username", BROWSERSTACK_USERNAME,
-            "accessKey", BROWSERSTACK_ACCESS_KEY,
-            "projectName", "My First Project",
-            "buildName", "My First Build",
-            "sessionName", "My First Appium Test"
+                "projectName", "My First Project",
+                "buildName", "My First Build",
+                "sessionName", "My First Appium Test"
         ));
 
-        // initialize the Appium driver
-        driver.set(new AndroidDriver(new URL(HUB_URL), options));
+        // --- DEPRECATION WARNING FIXED ---
+        // initialize the Appium driver using the modern URI.toURL() method
+        driver.set(new AndroidDriver(URI.create(HUB_URL).toURL(), options));
         driver.get().manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
     }
 
@@ -67,3 +68,4 @@ public class BaseTest {
     }
 
 }
+
